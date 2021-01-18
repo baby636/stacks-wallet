@@ -1,4 +1,4 @@
-import React, { FC, useRef, useCallback } from 'react';
+import React, { FC, useRef, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Spinner } from '@blockstack/ui';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -48,6 +48,8 @@ import { StackingError } from '@components/home/stacking-error-card';
 import { HomeLayout } from './home-layout';
 import { TransactionListItemMempool } from '@components/home/transaction-list/transaction-list-item-mempool';
 import { useMempool } from '@hooks/use-mempool';
+
+import { Subject } from 'rxjs';
 
 export const Home: FC = () => {
   const dispatch = useDispatch();

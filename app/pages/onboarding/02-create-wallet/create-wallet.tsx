@@ -36,11 +36,11 @@ export const CreateWallet: React.FC = () => {
         Please choose whether you’d like to connect a Ledger hardware wallet or to create a software
         wallet
       </OnboardingText>
-      {isMainnet() && (
-        <OnboardingButton mt="extra-loose" onClick={() => history.push(routes.CONNECT_LEDGER)}>
-          Use a Ledger wallet
-        </OnboardingButton>
-      )}
+      {/* {isMainnet() && ( */}
+      <OnboardingButton mt="extra-loose" onClick={() => history.push(routes.CONNECT_LEDGER)}>
+        Use a Ledger wallet
+      </OnboardingButton>
+      {/* )} */}
 
       <OnboardingButton onClick={createSoftwareWallet} mode="secondary">
         Create a software wallet

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import BlockstackApp, { LedgerError } from '@zondax/ledger-blockstack';
-import { Box, Text } from '@blockstack/ui';
+import { LedgerError } from '@zondax/ledger-blockstack';
 
-import { STX_DERIVATION_PATH } from '@constants/index';
 import routes from '@constants/routes.json';
 import {
   Onboarding,
@@ -14,20 +12,18 @@ import {
 } from '@components/onboarding';
 import { setLedgerWallet } from '@store/keys';
 
-import { delay } from '@utils/delay';
+import {
+  useConfirmLedgerStxAddress,
+  LedgerConnectStep,
+} from '@hooks/use-confirm-ledger-stx-address';
+import { useBackButton } from '@hooks/use-back-url';
+
 import { LedgerConnectInstructions } from '@components/ledger/ledger-connect-instructions';
-import { useLedger } from '@hooks/use-ledger';
 import { ErrorLabel } from '@components/error-label';
 import { ErrorText } from '@components/error-text';
-import { useBackButton } from '@hooks/use-back-url';
-import { isMainnet } from '@utils/network-utils';
 
-export enum LedgerConnectStep {
-  Disconnected,
-  ConnectedAppClosed,
-  ConnectedAppOpen,
-  HasAddress,
-}
+import { isMainnet } from '@utils/network-utils';
+import { delay } from '@utils/delay';
 
 export const ConnectLedger: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -38,51 +34,38 @@ export const ConnectLedger: React.FC = () => {
   const [ledgerLaunchVersionError, setLedgerLaunchVersionError] = useState<string | null>(null);
   useBackButton(routes.CREATE);
 
+  const { step } = useConfirmLedgerStxAddress();
+
   const dispatch = useDispatch();
   const history = useHistory();
-  const { transport, step, error } = useLedger();
 
   async function handleLedger() {
     setDeviceError(null);
     setLoading(true);
-    const usbTransport = transport;
-
-    if (usbTransport === null) return;
-
-    const app = new BlockstackApp(usbTransport);
 
     try {
-      await app.getVersion();
+      const deviceResponse = await api.ledger.requestAndConfirmStxAddress();
 
-      const confirmedResponse = await app.showAddressAndPubKey(STX_DERIVATION_PATH);
-
-      if (confirmedResponse.returnCode === LedgerError.TransactionRejected) {
+      if (deviceResponse.returnCode === LedgerError.TransactionRejected) {
         setDidRejectTx(true);
         setLoading(false);
         return;
       }
 
-      if (confirmedResponse.returnCode !== LedgerError.NoErrors) {
-        setLoading(false);
-        return;
-      }
-
-      if (confirmedResponse.address) {
+      if (deviceResponse.address) {
         setLoading(true);
         setHasConfirmedAddress(true);
         await delay(750);
-
-        if (isMainnet() && !confirmedResponse.address.startsWith('SP')) {
+        if (isMainnet() && !deviceResponse.address.startsWith('SP')) {
           setLedgerLaunchVersionError(
             'Make sure you have the most recent version of Ledger app. Address generated is for testnet'
           );
           return;
         }
-
         dispatch(
           setLedgerWallet({
-            address: confirmedResponse.address,
-            publicKey: (confirmedResponse.publicKey as unknown) as Buffer,
+            address: deviceResponse.address,
+            publicKey: (deviceResponse.publicKey as unknown) as Buffer,
             onSuccess: () => history.push(routes.HOME),
           })
         );
@@ -111,18 +94,18 @@ export const ConnectLedger: React.FC = () => {
       </Box>
       <LedgerConnectInstructions
         action="Confirm your address"
-        step={hasConfirmedAddress ? LedgerConnectStep.HasAddress : step}
+        step={hasConfirmedAddress ? LedgerConnectStep.ActionComplete : step}
       />
       {deviceError && (
         <ErrorLabel mt="base-loose">
           <ErrorText>{deviceError}</ErrorText>
         </ErrorLabel>
       )}
-      {error && (
+      {/* {error && (
         <ErrorLabel mt="base-loose">
           <ErrorText>{error}</ErrorText>
         </ErrorLabel>
-      )}
+      )} */}
       {ledgerLaunchVersionError !== null && (
         <ErrorLabel mt="base-loose">
           <ErrorText>{ledgerLaunchVersionError}</ErrorText>

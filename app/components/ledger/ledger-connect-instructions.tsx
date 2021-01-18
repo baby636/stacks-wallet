@@ -12,7 +12,7 @@ interface LedgerConnectInstructions {
 export const LedgerConnectInstructions: FC<LedgerConnectInstructions> = ({ step, action }) => {
   const hasConnected = (step: LedgerConnectStep) => step > LedgerConnectStep.Disconnected;
   const hasOpenedApp = (step: LedgerConnectStep) => step > LedgerConnectStep.ConnectedAppClosed;
-  const hasAddress = (step: LedgerConnectStep) => step === LedgerConnectStep.HasAddress;
+  const hasAddress = (step: LedgerConnectStep) => step === LedgerConnectStep.ActionComplete;
 
   return (
     <Box border="1px solid #F0F0F5" mt="extra-loose" borderRadius="8px">

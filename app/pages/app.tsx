@@ -18,7 +18,7 @@ import { safeAwait } from '@utils/safe-await';
 import { Api } from '@api/api';
 import { selectActiveNodeApi } from '@store/stacks-node';
 import { useInterval } from '@hooks/use-interval';
-import { watchContractExecution } from '../api/watch-contract-execution';
+import { watchContractExecution } from '@api/watch-contract-execution';
 import {
   fetchBlockTimeInfo,
   fetchCoreDetails,

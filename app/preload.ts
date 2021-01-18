@@ -4,7 +4,7 @@ import { contextBridge, ipcRenderer, shell } from 'electron';
 // These two modules are excluded from the bundle, so they can
 // be imported at runtime in the preload's `require`, rather
 // than being bundled in the output script
-import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
+// import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import argon2 from 'argon2-browser';
 
 const scriptsToLoad = [];
@@ -41,7 +41,11 @@ async function deriveArgon2Key({ pass, salt }: Record<'pass' | 'salt', string>) 
   return { derivedKeyHash: result.hash };
 }
 
-contextBridge.exposeInMainWorld('process', { ...process });
+contextBridge.exposeInMainWorld('process', {
+  version: process.version,
+  platform: process.platform,
+  env: {},
+});
 
 const walletApi = {
   // Expose protected methods that allow the renderer process to use
@@ -73,32 +77,36 @@ const walletApi = {
 
   reloadApp: () => ipcRenderer.invoke('reload-app'),
 
-  nodeHid: {
-    listen: (observer: any) => TransportNodeHid.listen(observer),
-    open: async ({ descriptor, onDisconnect }: any) => {
-      const transport = await TransportNodeHid.open(descriptor);
-      transport.on('disconnect', async () => {
-        await transport.close();
-        setTimeout(() => onDisconnect(), 0);
-      });
-      return {
-        transport,
-        closeTransportConnection: async () => {
-          await transport.close();
-        },
-      };
-    },
-  },
-
   contextMenu: (menuItems: any) => ipcRenderer.send('context-menu-open', { menuItems }),
 
   installPath: () => ipcRenderer.sendSync('installPath'),
 
   closeWallet: () => ipcRenderer.send('closeWallet'),
+
+  ledger: {
+    signTransaction: () => ({}),
+    requestAndConfirmStxAddress: async () => {
+      return ipcRenderer.invoke('ledger-request-stx-address');
+      // ipcRenderer.send('ledger-request-stx-address');
+      // return new Promise(resolve => {
+      //   ipcRenderer.once('ledger-stx-address-response', (_e, data) => {
+      //     resolve(data);
+      //   });
+      // });
+    },
+  },
 };
 
 declare global {
   const api: typeof walletApi;
 }
+
+function postMessageToApp(data: any) {
+  window.postMessage(data, '*');
+}
+
+ipcRenderer.on('ledger-event', (_event, data) =>
+  postMessageToApp({ type: 'ledger-event', ...data })
+);
 
 contextBridge.exposeInMainWorld('api', walletApi);

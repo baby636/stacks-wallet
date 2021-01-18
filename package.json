@@ -243,6 +243,7 @@
     "redux-persist": "6.0.0",
     "redux-thunk": "2.3.0",
     "rpc-websocket-client": "1.1.4",
+    "rxjs": "6.6.3",
     "source-map-support": "0.5.19",
     "styled-components": "5.2.1",
     "swr": "0.3.11",
