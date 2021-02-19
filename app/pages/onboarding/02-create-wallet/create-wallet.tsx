@@ -15,7 +15,7 @@ import {
 import { useBackButton } from '@hooks/use-back-url';
 import { openExternalLink } from '@utils/external-links';
 import { TREZOR_HELP_URL } from '@constants/index';
-import { isMainnet } from '@utils/network-utils';
+// import { isMainnet } from '@utils/network-utils';
 
 export const CreateWallet: React.FC = () => {
   const dispatch = useDispatch();

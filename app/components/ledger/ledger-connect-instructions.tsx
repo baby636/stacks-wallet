@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
 import { Box, Flex, CheckmarkCircleIcon } from '@blockstack/ui';
 
-import { LedgerConnectStep } from '../../pages/onboarding';
 import { LedgerStepText } from './ledger-step-text';
+import { LedgerConnectStep } from '@hooks/use-confirm-ledger-stx-address';
 
 interface LedgerConnectInstructions {
   step: LedgerConnectStep;

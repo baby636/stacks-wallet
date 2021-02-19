@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { LedgerError } from '@zondax/ledger-blockstack';
+import { Box, Text } from '@blockstack/ui';
 
 import routes from '@constants/routes.json';
 import {
@@ -12,10 +13,7 @@ import {
 } from '@components/onboarding';
 import { setLedgerWallet } from '@store/keys';
 
-import {
-  useConfirmLedgerStxAddress,
-  LedgerConnectStep,
-} from '@hooks/use-confirm-ledger-stx-address';
+import { usePrepareLedger, LedgerConnectStep } from '@hooks/use-confirm-ledger-stx-address';
 import { useBackButton } from '@hooks/use-back-url';
 
 import { LedgerConnectInstructions } from '@components/ledger/ledger-connect-instructions';
@@ -34,7 +32,7 @@ export const ConnectLedger: React.FC = () => {
   const [ledgerLaunchVersionError, setLedgerLaunchVersionError] = useState<string | null>(null);
   useBackButton(routes.CREATE);
 
-  const { step } = useConfirmLedgerStxAddress();
+  const { step } = usePrepareLedger();
 
   const dispatch = useDispatch();
   const history = useHistory();
@@ -65,7 +63,7 @@ export const ConnectLedger: React.FC = () => {
         dispatch(
           setLedgerWallet({
             address: deviceResponse.address,
-            publicKey: (deviceResponse.publicKey as unknown) as Buffer,
+            publicKey: deviceResponse.publicKey,
             onSuccess: () => history.push(routes.HOME),
           })
         );

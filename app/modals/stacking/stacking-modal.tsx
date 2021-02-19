@@ -2,14 +2,13 @@ import React, { FC, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Modal } from '@blockstack/ui';
 import { useHistory } from 'react-router-dom';
-import BlockstackApp, { LedgerError, ResponseSign } from '@zondax/ledger-blockstack';
+import { LedgerError } from '@zondax/ledger-blockstack';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { BigNumber } from 'bignumber.js';
 import { StackingClient } from '@stacks/stacking';
 import BN from 'bn.js';
 
 import { RootState } from '@store/index';
-import { STX_DERIVATION_PATH } from '@constants/index';
 import routes from '@constants/routes.json';
 import {
   selectPublicKey,
@@ -29,7 +28,6 @@ import {
 import { broadcastTransaction, BroadcastTransactionArgs } from '@store/transaction';
 import { selectActiveNodeApi } from '@store/stacks-node';
 import { selectAddressBalance } from '@store/address';
-import { LedgerConnectStep } from '@hooks/use-ledger';
 import { safeAwait } from '@utils/safe-await';
 
 import {
@@ -43,6 +41,7 @@ import { SignTxWithLedger } from './steps/sign-tx-with-ledger';
 import { StackingFailed } from './steps/stacking-failed';
 import { delay } from '@utils/delay';
 import { stacksNetwork } from '../../environment';
+import { LedgerConnectStep, usePrepareLedger } from '@hooks/use-confirm-ledger-stx-address';
 
 enum StackingModalStep {
   DecryptWalletAndSend,
@@ -73,7 +72,6 @@ export const StackingModal: FC<StackingModalProps> = props => {
 
   const [decryptionError, setDecryptionError] = useState<string | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
-  const [blockstackApp, setBlockstackApp] = useState<null | BlockstackApp>(null);
 
   const {
     encryptedMnemonic,
@@ -159,8 +157,7 @@ export const StackingModal: FC<StackingModalProps> = props => {
   const createLedgerWalletTx = useCallback(
     async (options: { publicKey: Buffer }): Promise<StacksTransaction> => {
       if (coreNodeInfo === null) throw new Error('Stacking requires coreNodeInfo');
-      if (!blockstackApp || !poxInfo || !balance)
-        throw new Error('`poxInfo` or `blockstackApp` is not defined');
+      if (!poxInfo || !balance) throw new Error('`poxInfo` is not defined');
       // 1. Form unsigned contract call transaction
 
       const stackingClient = initStackingClient();
@@ -183,10 +180,7 @@ export const StackingModal: FC<StackingModalProps> = props => {
             amountMicroStx: new BN(amountToStack.toString()),
           })
         : unsignedTx;
-      const resp: ResponseSign = await blockstackApp.sign(
-        STX_DERIVATION_PATH,
-        modifiedFeeTx.serialize()
-      );
+      const resp = await api.ledger.signTransaction(modifiedFeeTx.serialize().toString('hex'));
       if (resp.returnCode !== LedgerError.NoErrors) {
         throw new Error('Ledger responded with errors');
       }
@@ -194,7 +188,6 @@ export const StackingModal: FC<StackingModalProps> = props => {
     },
     [
       coreNodeInfo,
-      blockstackApp,
       poxInfo,
       balance,
       initStackingClient,
@@ -260,13 +253,7 @@ export const StackingModal: FC<StackingModalProps> = props => {
     }
   };
 
-  const [ledgerConnectStep, setLedgerConnectStep] = useState(LedgerConnectStep.Disconnected);
-
-  const setBlockstackAppCallback = useCallback(
-    blockstackApp => setBlockstackApp(blockstackApp),
-    []
-  );
-  const updateStep = useCallback(step => setLedgerConnectStep(step), []);
+  const { step: ledgerConnectStep } = usePrepareLedger();
 
   const txFormStepMap: Record<StackingModalStep, StackingModalComponents> = {
     [StackingModalStep.DecryptWalletAndSend]: () => ({
@@ -301,7 +288,7 @@ export const StackingModal: FC<StackingModalProps> = props => {
       header: (
         <StackingModalHeader onSelectClose={onClose}>Confirm on your Ledger</StackingModalHeader>
       ),
-      body: <SignTxWithLedger onLedgerConnect={setBlockstackAppCallback} updateStep={updateStep} />,
+      body: <SignTxWithLedger step={ledgerConnectStep} />,
       footer: (
         <StackingModalFooter>
           <StackingModalButton
@@ -314,16 +301,9 @@ export const StackingModal: FC<StackingModalProps> = props => {
             Close
           </StackingModalButton>
           <StackingModalButton
-            isDisabled={
-              blockstackApp === null ||
-              hasSubmitted ||
-              ledgerConnectStep !== LedgerConnectStep.ConnectedAppOpen
-            }
+            isDisabled={hasSubmitted || ledgerConnectStep !== LedgerConnectStep.ConnectedAppOpen}
             isLoading={hasSubmitted}
-            onClick={() => {
-              if (blockstackApp === null) return;
-              void broadcastTx();
-            }}
+            onClick={() => void broadcastTx()}
           >
             Sign transaction
           </StackingModalButton>

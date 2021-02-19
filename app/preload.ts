@@ -6,6 +6,10 @@ import { contextBridge, ipcRenderer, shell } from 'electron';
 // than being bundled in the output script
 // import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import argon2 from 'argon2-browser';
+import type {
+  LedgerRequestSignTx,
+  LedgerRequestStxAddress,
+} from './main/register-ledger-listeners';
 
 const scriptsToLoad = [];
 
@@ -84,15 +88,13 @@ const walletApi = {
   closeWallet: () => ipcRenderer.send('closeWallet'),
 
   ledger: {
-    signTransaction: () => ({}),
-    requestAndConfirmStxAddress: async () => {
-      return ipcRenderer.invoke('ledger-request-stx-address');
-      // ipcRenderer.send('ledger-request-stx-address');
-      // return new Promise(resolve => {
-      //   ipcRenderer.once('ledger-stx-address-response', (_e, data) => {
-      //     resolve(data);
-      //   });
-      // });
+    createListener: () => ipcRenderer.send('create-ledger-listener'),
+    removeListener: () => ipcRenderer.send('remove-ledger-listener'),
+    async signTransaction(unsignedTxHex: string) {
+      return ipcRenderer.invoke('ledger-request-sign-tx', unsignedTxHex) as LedgerRequestSignTx;
+    },
+    async requestAndConfirmStxAddress() {
+      return ipcRenderer.invoke('ledger-request-stx-address') as LedgerRequestStxAddress;
     },
   },
 };
