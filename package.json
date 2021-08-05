@@ -166,7 +166,7 @@
     "electron-builder": "22.9.1",
     "electron-devtools-installer": "3.0.0",
     "electron-notarize": "1.0.0",
-    "electron-rebuild": "1.11.0",
+    "electron-rebuild": "2.0.0",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.15.5",
     "enzyme-to-json": "3.5.0",
