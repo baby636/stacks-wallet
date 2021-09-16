@@ -156,7 +156,7 @@
     "circular-dependency-plugin": "5.2.2",
     "compare-versions": "3.6.0",
     "concat-map": "0.0.1",
-    "concurrently": "5.3.0",
+    "concurrently": "6.0.0",
     "copy-webpack-plugin": "6.3.0",
     "cross-env": "7.0.3",
     "cross-spawn": "7.0.3",
@@ -166,7 +166,7 @@
     "electron-builder": "22.9.1",
     "electron-devtools-installer": "3.0.0",
     "electron-notarize": "1.0.0",
-    "electron-rebuild": "1.11.0",
+    "electron-rebuild": "2.0.1",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.15.5",
     "enzyme-to-json": "3.5.0",
@@ -193,8 +193,8 @@
     "url-loader": "4.1.1",
     "webpack": "4.43.0",
     "webpack-bundle-analyzer": "3.8.0",
-    "webpack-cli": "3.3.12",
-    "webpack-dev-server": "3.11.0",
+    "webpack-cli": "4.0.0",
+    "webpack-dev-server": "4.0.0",
     "webpack-merge": "5.0.9"
   },
   "dependencies": {
