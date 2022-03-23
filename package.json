@@ -228,7 +228,7 @@
     "electron-window-state": "5.0.3",
     "formik": "2.2.6",
     "history": "4.10.1",
-    "minimist": "1.2.5",
+    "minimist": "1.2.6",
     "qrcode.react": "1.0.1",
     "react": "17.0.1",
     "react-card-flip": "1.0.11",
