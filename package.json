@@ -116,7 +116,7 @@
     "@types/copy-webpack-plugin": "6.2.0",
     "@types/css-font-loading-module": "0.0.4",
     "@types/electron-devtools-installer": "2.2.0",
-    "@types/electron-window-state": "2.0.34",
+    "@types/electron-window-state": "5.0.0",
     "@types/enzyme": "3.10.8",
     "@types/enzyme-adapter-react-16": "1.0.6",
     "@types/history": "4.7.8",
